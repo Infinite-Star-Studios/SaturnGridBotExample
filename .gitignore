@@ -1,0 +1,12 @@
+# Build output
+/target/
+
+# Your wallet keys and the bot's state: never commit these.
+/keys/
+/state/
+*.key.json
+STOP
+
+# Your own config (copy saturn-grid.example.toml to start)
+/saturn-grid.toml
+*.local.toml

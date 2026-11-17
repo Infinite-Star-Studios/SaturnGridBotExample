@@ -1,0 +1,48 @@
+# saturn-grid example config.
+#
+#   cp saturn-grid.example.toml saturn-grid.toml     # your copy (git-ignored)
+#   saturn-grid plan                                 # read the pool, check the grid
+#   saturn-grid run                                  # paper trading: no keys, no swaps
+#   saturn-grid run --live                           # real swaps (asks you to type "yes" on mainnet)
+#
+# Unknown keys are errors, so a typo never falls back to a default silently.
+
+network = "mainnet"         # "mainnet" or "devnet" (the test network)
+pool    = "v4:33"           # a Saturn v4 pool id; find one with: saturn-grid pools --pair RA,TAZ
+base    = "RA"              # the token the grid buys low and sells high
+quote   = "TAZ"             # the token it pays with; prices are quote per base (TAZ per RA)
+
+[grid]
+lower           = "40"         # lowest line (quote per base)
+upper           = "52"         # highest line
+levels          = 12           # number of slots between lower and upper (1-200)
+spacing         = "geometric"  # "geometric" (equal % steps) or "arithmetic" (equal steps)
+quote_per_order = "10"         # quote spent per buy (here 10 TAZ); sells sell what that bought
+compound        = false        # true: profits stay in their slot and grow its next order
+
+[risk]
+slippage_bps             = 50     # min-out protection per swap: 0.50% (max 300 = 3%)
+max_price_impact_bps     = 100    # skip a swap that would move the pool more than 1%
+min_profit_bps           = 10     # refuse a grid whose round trip earns < 0.10% after fees
+stop_outside_range_bps   = 1000   # pause while the price is >10% outside [lower, upper] (0 = never)
+max_consecutive_failures = 3      # stop after this many failed swaps in a row
+max_trades_per_hour      = 60     # circuit breaker
+allow_unfunded_start     = false  # true: start a live grid even if the wallet cannot fund every slot
+
+[engine]
+poll_ms             = 1000  # how often the pool is read (min 250; the public RPC is shared)
+confirm_poll_ms     = 500   # how often a sent swap is checked
+tx_ttl_secs         = 90    # a swap not in a block by then can never execute
+max_clock_skew_secs = 30    # refuse to run if this machine's clock is off by more
+
+[files]
+# Relative paths are taken from this config file's folder.
+key         = "keys/mainnet.json"   # {"wif": "..."}, mode 0600; make one with: saturn-grid keygen
+# state       = "state/mainnet-v4-33-ra-taz.json"        # default shown
+# paper_state = "state/mainnet-v4-33-ra-taz.paper.json"  # default shown
+
+[rpc]
+# url           = "https://pharpc1.phantasma.info/rpc"  # default per network
+# allowed_hosts = []          # extra RPC hosts you trust (the default host is always allowed)
+tls_roots = "webpki"          # "webpki" (built-in Mozilla roots) or "platform" (OS trust store,
+                              # needed behind a TLS-inspecting proxy)
